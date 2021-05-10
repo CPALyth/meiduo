@@ -7,6 +7,14 @@ from django import http
 from django.urls import reverse
 
 from .models import User
+from meiduo_mall.utils.response_code import RETCODE
+
+
+class UsernameCountView(View):
+    """判断用户名是否重复注册"""
+    def get(self, request, username):
+        count = User.objects.filter(username=username).count()
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'count': count})
 
 
 class RegisterView(View):
