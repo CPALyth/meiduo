@@ -1,8 +1,10 @@
 import re
 
-from django.shortcuts import render
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
 from django.views import View
 from django import http
+from django.urls import reverse
 
 from .models import User
 
@@ -15,6 +17,7 @@ class RegisterView(View):
 
     def post(self, request):
         """实现用户注册业务逻辑"""
+
         # 接收参数
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -43,10 +46,13 @@ class RegisterView(View):
 
         # 保存注册数据: 是注册业务的核心
         try:
-            User.objects.create_user(username=username, password=password, mobile=mobile)
+            user = User.objects.create_user(username=username, password=password, mobile=mobile)
         except:
             return render(request, 'register.html', {'register_errmsg': '注册失败'})
 
+        # 实现状态保持
+        login(request, user)
+
         # 成功， 重定向到首页
-        return http.HttpResponse('注册成功，重定向到首页')
+        return redirect(reverse('contents:index'))
 

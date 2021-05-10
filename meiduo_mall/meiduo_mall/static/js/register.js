@@ -195,7 +195,7 @@ let vm = new Vue({
             this.check_password();
             this.check_password2();
             this.check_mobile();
-            this.check_sms_code();
+            // this.check_sms_code();
             this.check_allow();
             if (this.error_name == true || this.error_password == true || this.error_password2 == true
                 || this.error_mobile == true || this.error_sms_code == true || this.error_allow == true) {
