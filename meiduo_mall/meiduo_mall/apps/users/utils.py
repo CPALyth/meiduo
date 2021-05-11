@@ -1,7 +1,43 @@
-# 自定义用户认证的后端: 实现多账号登录
 import re
+
+from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
-from users.models import User
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+
+from .models import User
+from . import constants
+
+
+def generate_verify_email_url(user):
+    """
+    生成邮箱激活链接
+    :param user: 当前登录用户
+    :return: 邮箱激活链接
+    """
+    s = Serializer(settings.SECRET_KEY, constants.VERIFY_EMAIL_TOKEN_EXPIRES)
+    data = {'user_id': user.id, 'email': user.email}
+    token = s.dumps(data)
+    return settings.EMAIL_VERIFY_URL + '?token=' + token.decode()
+
+
+def check_verify_email_token(token):
+    """
+    反序列化token, 获取user
+    :param token: 序列化后的用户信息
+    :return: user
+    """
+    s = Serializer(settings.SECRET_KEY, constants.VERIFY_EMAIL_TOKEN_EXPIRES)
+    try:
+        data = s.loads(token)
+    except:
+        return None
+    user_id = data.get('user_id')
+    email = data.get('email')
+    try:
+        user = User.objects.get(id=user_id, email=email)
+    except:
+        return None
+    return user
 
 
 def get_user_by_acount(account):
@@ -21,7 +57,7 @@ def get_user_by_acount(account):
 
 
 class UsernameMobileBackend(ModelBackend):
-    """自定义用户认证后端"""
+    """自定义用户认证后端, 实现多账号登录"""
     def authenticate(self, request, username=None, password=None, **kwargs):
         """
         重写用户认证的方法

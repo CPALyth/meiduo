@@ -9,6 +9,7 @@ from django.urls import reverse
 from django_redis import get_redis_connection
 
 from .models import User
+from .utils import generate_verify_email_url
 from meiduo_mall.utils.response_code import RETCODE
 from celery_tasks.email.tasks import send_virify_email
 
@@ -17,6 +18,7 @@ logger = logging.getLogger('django')
 class EmailView(View):
     """添加邮箱"""
     def put(self, request):
+        user = request.user
         # 接收参数
         json_dict = json.loads(request.body.decode())
         email = json_dict.get('email')
@@ -26,13 +28,13 @@ class EmailView(View):
             return http.HttpResponseForbidden('参数email有误')
         # 保存邮箱到数据库
         try:
-            request.user.email = email
-            request.user.save()
+            user.email = email
+            user.save()
         except Exception as e:
             logger.error(e)
             return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
         # 发送验证邮件到邮箱
-        verify_url = 'www.baidu.com'
+        verify_url = generate_verify_email_url(user)
         send_virify_email.delay(email, verify_url)
         # 响应结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
