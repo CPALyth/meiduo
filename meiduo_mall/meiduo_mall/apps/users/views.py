@@ -1,4 +1,4 @@
-import re,json
+import re, json, logging
 
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,6 +11,8 @@ from django_redis import get_redis_connection
 from .models import User
 from meiduo_mall.utils.response_code import RETCODE
 
+logger = logging.getLogger('django')
+
 class EmailView(View):
     """添加邮箱"""
     def put(self, request):
@@ -21,7 +23,14 @@ class EmailView(View):
         pat = r'^[a-zA-Z0-9]+[a-zA-Z0-9_-]+@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$'
         if not re.match(pat, email):
             return http.HttpResponseForbidden('参数email有误')
-
+        # 保存邮箱到数据库
+        try:
+            request.user.email = email
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
 
 
 
