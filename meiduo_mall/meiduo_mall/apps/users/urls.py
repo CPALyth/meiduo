@@ -11,5 +11,8 @@ urlpatterns = [
     re_path(r'^mobiles/(?P<mobile>1[3-9]\d{9})/count/$', views.MobileCountView.as_view()),
     # 用户登录
     path('login/', views.LoginView.as_view(), name='login'),
+    # 退出登录
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+
 
 ]
