@@ -6,10 +6,11 @@ from django import http
 
 from meiduo_mall.utils.response_code import RETCODE
 from .libs.captcha.captcha import captcha
-from .libs import constants
+from . import constants
+from celery_tasks.sms.tasks import send_sms_code
 
 # 创建日志输出器
-from .libs.yuntongxun.ccp_sms import CCP
+from celery_tasks.sms.yuntongxun.ccp_sms import CCP
 
 logger = logging.getLogger('django')
 
@@ -57,8 +58,9 @@ class SMSCodeView(View):
         # 执行
         pl.execute()
 
-        # 发送短信验证码
-        CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES // 60], constants.SEND_SMS_TEMPLATE_ID)
+        # 异步发送短信验证码
+        send_sms_code.delay(mobile, sms_code)
+        # CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES // 60], constants.SEND_SMS_TEMPLATE_ID)
         # 响应结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '发送短信成功'})
 
