@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-hy04&&ogujj*dkj!a#851-t%54w_-grjuabrg6adi+i-bj=58%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['www.meiduo.site']
 
 
 # Application definition
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'contents',
     'verifications',
+    'oauth',
 ]
 
 MIDDLEWARE = [
@@ -230,3 +231,8 @@ AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileBackend']
 
 # 未登录时重定向的路由
 LOGIN_URL = '/login/'
+
+# QQ登录
+QQ_CLIENT_ID = '101518219'
+QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
