@@ -39,8 +39,12 @@ class LoginView(View):
         # 使用remembered确定状态保持周期(默认是两周)
         if remembered != 'on':
             request.session.set_expiry(0)  # 状态保持在浏览器会话结束就销毁
-        # 响应结果, 重定向到首页
-        return redirect(reverse('contents:index'))
+        # 响应结果
+        response = redirect(reverse('contents:index'))
+        # 设置cookie
+        response.set_cookie('username', user.username, max_age=3600*24*14)
+        # 重定向到首页
+        return response
 
 
 class MobileCountView(View):
@@ -108,6 +112,10 @@ class RegisterView(View):
         # 实现状态保持
         login(request, user)
 
-        # 成功， 重定向到首页
-        return redirect(reverse('contents:index'))
+        # 响应结果
+        response = redirect(reverse('contents:index'))
+        # 设置cookie
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 14)
+        # 重定向到首页
+        return response
 
