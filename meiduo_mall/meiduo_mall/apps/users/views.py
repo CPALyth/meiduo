@@ -1,4 +1,4 @@
-import re
+import re,json
 
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,6 +10,19 @@ from django_redis import get_redis_connection
 
 from .models import User
 from meiduo_mall.utils.response_code import RETCODE
+
+class EmailView(View):
+    """添加邮箱"""
+    def put(self, request):
+        # 接收参数
+        json_dict = json.loads(request.body.decode())
+        email = json_dict.get('email')
+        # 校验参数
+        pat = r'^[a-zA-Z0-9]+[a-zA-Z0-9_-]+@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$'
+        if not re.match(pat, email):
+            return http.HttpResponseForbidden('参数email有误')
+
+
 
 
 class UserInfoView(LoginRequiredMixin, View):
