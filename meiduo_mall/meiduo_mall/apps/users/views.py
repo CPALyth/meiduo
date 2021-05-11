@@ -1,6 +1,7 @@
 import re
 
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.views import View
 from django import http
@@ -9,6 +10,13 @@ from django_redis import get_redis_connection
 
 from .models import User
 from meiduo_mall.utils.response_code import RETCODE
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    """用户中心"""
+    def get(self, request):
+        """提供个人信息页面"""
+        return render(request, 'user_center_info.html')
 
 
 class LogoutView(View):
@@ -52,8 +60,12 @@ class LoginView(View):
         # 使用remembered确定状态保持周期(默认是两周)
         if remembered != 'on':
             request.session.set_expiry(0)  # 状态保持在浏览器会话结束就销毁
-        # 响应结果
-        response = redirect(reverse('contents:index'))
+        # 响应结果, 先取出next
+        next = request.GET.get('next')
+        if next:
+            response = redirect(next)
+        else:
+            response = redirect(reverse('contents:index'))
         # 设置cookie
         response.set_cookie('username', user.username, max_age=3600*24*14)
         # 重定向到首页

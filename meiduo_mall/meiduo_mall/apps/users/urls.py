@@ -13,6 +13,7 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     # 退出登录
     path('logout/', views.LogoutView.as_view(), name='logout'),
-
+    # 用户中心
+    path('info/', views.UserInfoView.as_view(), name='info'),
 
 ]
