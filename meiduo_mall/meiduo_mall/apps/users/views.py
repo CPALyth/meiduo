@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django import http
 from django.urls import reverse
+from django_redis import get_redis_connection
 
 from .models import User
 from meiduo_mall.utils.response_code import RETCODE
@@ -32,12 +33,12 @@ class RegisterView(View):
 
     def post(self, request):
         """实现用户注册业务逻辑"""
-
         # 接收参数
         username = request.POST.get('username')
         password = request.POST.get('password')
         password2 = request.POST.get('password2')
         mobile = request.POST.get('mobile')
+        sms_code_client = request.POST.get('sms_code')
         allow = request.POST.get('allow')
         # 校验参数： 避免恶意用户绕过前端逻辑， 要保证后端的安全
         # 判断参数是否齐全， all([列表])会去校验列表中的元素是否为空， 只要有一个为空， 返回false
@@ -58,6 +59,13 @@ class RegisterView(View):
         # 判断是否勾选用户协议
         if allow != 'on':
             return http.HttpResponseForbidden('请勾选用户协议')
+        # 判断短信验证码是否输对
+        redis_conn = get_redis_connection('verify_code')
+        sms_code_server = redis_conn.get('sms_{}'.format(mobile))
+        if sms_code_server is None:
+            return render(request, 'register.html', {'error_sms_code_message': '短信验证码已失效'})
+        if sms_code_client != sms_code_server.decode():
+            return render(request, 'register.html', {'error_sms_code_message': '短信验证码输入有误'})
 
         # 保存注册数据: 是注册业务的核心
         try:

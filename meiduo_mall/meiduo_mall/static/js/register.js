@@ -45,9 +45,13 @@ let vm = new Vue({
             if (this.error_mobile == true || this.error_image_code == true) {
                 return;
             }
-            let url = '/sms_codes/' + this.mobile + '/?image_code=' + this.image_code + '&uuid=' + this.uuid;
+            let url = '/sms_codes/' + this.mobile;
             axios.get(url, {
-                responseType: 'json'
+                responseType: 'json',
+                params: {
+                    image_code: this.image_code,
+                    uuid: this.uuid
+                }
             })
                 .then((response)=>{
                     if (response.data.code == '0') {
@@ -195,7 +199,7 @@ let vm = new Vue({
             this.check_password();
             this.check_password2();
             this.check_mobile();
-            // this.check_sms_code();
+            this.check_sms_code();
             this.check_allow();
             if (this.error_name == true || this.error_password == true || this.error_password2 == true
                 || this.error_mobile == true || this.error_sms_code == true || this.error_allow == true) {
