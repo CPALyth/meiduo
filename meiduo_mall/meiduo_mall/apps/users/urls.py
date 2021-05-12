@@ -23,6 +23,6 @@ urlpatterns = [
     path('addresses/', views.AddressView.as_view(), name='address'),
     # 新增用户地址
     path('addresses/create/', views.AddressCreateView.as_view()),
-    # 修改用户地址
+    # 修改/删除用户地址
     path('addresses/<int:address_id>/', views.UpdateDestroyAddressView.as_view()),
 ]

@@ -313,6 +313,7 @@ class AddressView(View):
 class UpdateDestroyAddressView(View):
     """更新和删除地址"""
     def put(self, request, address_id):
+        """更新地址"""
         # 接收参数
         json_dict = json.loads(request.body.decode())
         receiver = json_dict.get('receiver')
@@ -364,3 +365,13 @@ class UpdateDestroyAddressView(View):
             'email': address.email
         }
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '修改地址成功', 'address': address_dict})
+
+    def delete(self, request, address_id):
+        """删除地址"""
+        try:
+            Address.objects.filter(id=address_id).update(is_deleted=True)
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '删除地址失败'})
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '删除地址成功'})
+
