@@ -27,7 +27,7 @@ class SMSCodeView(View):
         uuid = request.GET.get('uuid')
         # 校验参数
         if not all([mobile, image_code_client, uuid]):
-            return http.HttpResponseForbidden('缺少必传参数')
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必传参数'})
         # 创建redis连接对象
         redis_conn = get_redis_connection('verify_code')
         # 判断用户是否频繁发送短信验证码

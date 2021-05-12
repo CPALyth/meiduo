@@ -168,7 +168,7 @@ class EmailView(View):
         # 校验参数
         pat = r'^[a-zA-Z0-9]+[a-zA-Z0-9_-]+@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$'
         if not re.match(pat, email):
-            return http.HttpResponseForbidden('参数email有误')
+            return http.JsonResponse({'code': RETCODE.EMAILERR, 'errmsg': '参数email有误'})
         # 保存邮箱到数据库
         try:
             user.email = email
@@ -234,15 +234,13 @@ class AddressCreateView(LoginRequiredJsonMixin, View):
 
         # 校验参数
         if not all([receiver, province_id, city_id, district_id, place, mobile]):
-            return http.HttpResponseForbidden('缺少必传参数')
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必传参数'})
         if not re.match(r'^1[3-9]\d{9}$', mobile):
-            return http.HttpResponseForbidden('参数mobile有误')
-        if tel:
-            if not re.match(r'^(0[0-9]{2,3}-)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?$', tel):
-                return http.HttpResponseForbidden('参数tel有误')
-        if email:
-            if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
-                return http.HttpResponseForbidden('参数email有误')
+            return http.JsonResponse({'code': RETCODE.MOBILEERR, 'errmsg': '参数mobile有误'})
+        if tel and not re.match(r'^(0[0-9]{2,3}-)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?$', tel):
+            return http.JsonResponse({'code': RETCODE.TELERR, 'errmsg': '参数tel有误'})
+        if email and not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+            return http.JsonResponse({'code': RETCODE.EMAILERR, 'errmsg': '参数email有误'})
 
         # 保存用户传入的地址信息
         try:
