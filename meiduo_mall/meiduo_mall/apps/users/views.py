@@ -202,3 +202,9 @@ class VerifyEmailView(View):
             return http.HttpResponseServerError('激活邮箱失败')
         # 响应结果: 重定向到用户中心
         return redirect(reverse('users:info'))
+
+
+class AddressView(LoginRequiredMixin, View):
+    """用户收货地址"""
+    def get(self, request):
+        return render(request, 'user_center_site.html')
