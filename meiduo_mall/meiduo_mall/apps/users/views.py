@@ -392,9 +392,7 @@ class DefaultAddressView(View):
 
 class UpdateTitleAddressView(View):
     """更改地址标题"""
-
     def put(self, request, address_id):
-        """实现更新地址标题"""
         # 接收参数
         json_dict = json.loads(request.body.decode())
         title = json_dict.get('title')
@@ -411,3 +409,38 @@ class UpdateTitleAddressView(View):
             logger.error(e)
             return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '更新标题失败'})
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '更新标题成功'})
+
+class ChangePasswordView(View):
+    """修改密码"""
+    def get(self, request):
+        """展示修改密码界面"""
+        return render(request, 'user_center_pass.html')
+
+    def post(self, request):
+        """实现修改密码"""
+        user = request.user
+        # 接收参数
+        old_pwd = request.POST.get('old_password')
+        new_pwd = request.POST.get('new_password')
+        new_pwd2 = request.POST.get('new_password2')
+        # 校验参数
+        if not all([old_pwd, new_pwd, new_pwd2]):
+            return http.HttpResponseForbidden('缺少必传参数')
+        if not user.check_password(old_pwd):
+            return render(request, 'user_center_pass.html', {'origin_pwd_errmsg': '原始密码错误'})
+        if not re.match(r'^[0-9A-Za-z]{8,20}$', new_pwd):
+            return http.HttpResponseForbidden('密码由大小写数字组成, 最少8位，最长20位')
+        if new_pwd != new_pwd2:
+            return http.HttpResponseForbidden('两次输入的密码不一致')
+        # 修改密码
+        try:
+            user.set_password(new_pwd)
+            user.save()
+        except Exception as e:
+            logger.error(e)
+            return render(request, 'user_center_pass.html', {'change_password_errmsg': '修改密码失败'})
+        # 清理状态保持
+        logout(request)
+        response = redirect(reverse('users:login'))
+        response.delete_cookie('username')
+        return response
