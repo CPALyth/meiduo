@@ -375,3 +375,17 @@ class UpdateDestroyAddressView(View):
             return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '删除地址失败'})
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '删除地址成功'})
 
+
+class DefaultAddressView(View):
+    """设置默认地址"""
+    def put(self, request, address_id):
+        try:
+            address = Address.objects.get(id=address_id)
+            user = request.user
+            user.default_address = address
+            user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '设置默认地址失败'})
+        # 响应结果
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '设置默认地址成功'})
