@@ -20,5 +20,8 @@ urlpatterns = [
     # 验证邮箱
     path('emails/verification/', views.VerifyEmailView.as_view()),
     # 展示用户地址
-    path('addresses', views.AddressView.as_view(), name='address')
+    path('addresses/', views.AddressView.as_view(), name='address'),
+    # 新增用户地址
+    path('addresses/create/', views.AddressCreateView.as_view()),
+
 ]
