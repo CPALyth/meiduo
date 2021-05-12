@@ -89,7 +89,7 @@
 				</ul>
 				<div class="down_btn">
                     <a v-if="address.id!=default_address_id" @click="set_default(index)">设为默认</a>
-					<a href="show_edit_site(index)" class="edit_icon">编辑</a>
+					<a @click="show_edit_site(index)" class="edit_icon">编辑</a>
 				</div>
 			</div>
 		</div>
