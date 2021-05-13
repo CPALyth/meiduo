@@ -84,10 +84,51 @@ class DetailView(View):
         categories = get_categories()
         # 查询面包屑导航
         breadcrumb = get_breadcrumb(sku.category)
+
+        # 构建当前商品的规格键
+        sku_specs = sku.specs.order_by('spec_id')
+        sku_key = []  # [10, 12]
+        for spec in sku_specs:
+            sku_key.append(spec.option.id)
+        # 获取当前商品的所有SKU
+        skus = sku.spu.sku_set.all()
+        # 构建不同规格参数（选项）的sku字典
+        spec_sku_map = {}  # {(8, 11): 3, (8, 12): 4, (9, 11): 5, (9, 12): 6, (10, 11): 7, (10, 12): 8}
+        for s in skus:
+            # 获取sku的规格参数, <QuerySet [<SKUSpecification: 颜色 - 金色>, <SKUSpecification: 内存 - 64GB>]>
+            s_specs = s.specs.order_by('spec_id')
+            # 用于形成规格参数-sku字典的键
+            key = []
+            for spec in s_specs:
+                key.append(spec.option.id)
+            # 向规格参数-sku字典添加记录
+            spec_sku_map[tuple(key)] = s.id
+        # 获取当前商品的规格信息 <QuerySet [<SPUSpecification: Apple iPhone 8 Plus: 颜色>, <SPUSpecification: Apple iPhone 8 Plus: 内存>]>
+        goods_specs = sku.spu.specs.order_by('id')
+        # 若当前sku的规格信息不完整，则不再继续
+        if len(sku_key) < len(goods_specs):
+            return http.HttpResponseForbidden('当前sku的规格信息不完整')
+
+        for index, spec in enumerate(goods_specs):
+            # 复制当前sku的规格键
+            key = sku_key[:]
+            # 该规格的选项<QuerySet [<SpecificationOption: Apple iPhone 8 Plus: 颜色 - 金色>, <SpecificationOption: Apple iPhone 8 Plus: 颜色 - 深空灰>, <SpecificationOption: Apple iPhone 8 Plus: 颜色 - 银色>]>
+            spec_options = spec.options.all()
+            for option in spec_options:
+                # 在规格参数sku字典中查找符合当前规格的sku
+                key[index] = option.id
+                option.sku_id = spec_sku_map.get(tuple(key))
+            spec.spec_options = spec_options
+
         # 构造上下文
         context = {
             'categories': categories,
             'breadcrumb': breadcrumb,
             'sku': sku,
+            'specs': goods_specs,
         }
+
+        for spec in goods_specs:
+            print(spec)
+
         return render(request, 'detail.html', context)
