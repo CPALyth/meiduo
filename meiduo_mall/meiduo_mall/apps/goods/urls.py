@@ -5,5 +5,6 @@ app_name = 'goods'
 urlpatterns = [
     # 商品列表页
     path('list/<int:category_id>/<int:page_num>/', views.ListView.as_view(), name='list'),
-
+    # 热销列表
+    path('hot/<int:category_id>/', views.HotGoodsView.as_view()),
 ]

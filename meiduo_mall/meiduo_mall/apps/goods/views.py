@@ -3,7 +3,8 @@ from django.views import View
 from django import http
 from django.core.paginator import Paginator
 
-from .models import GoodsCategory
+from meiduo_mall.utils.response_code import RETCODE
+from .models import GoodsCategory, SKU
 from .utils import get_breadcrumb
 from contents.utils import get_categories
 
@@ -53,3 +54,20 @@ class ListView(View):
             'category_id': category_id,
         }
         return render(request, 'list.html', context)
+
+
+class HotGoodsView(View):
+    """热销排行"""
+    def get(self, request, category_id):
+        # 查询指定分类的SKU信息, 而且是上架, 按销量由高到低排序, 最后切片取出前两位
+        skus = SKU.objects.filter(category_id=category_id, is_launched=True).order_by('-sales')[:2]
+        # 将模型列表转字典列表, 构造JSON数据
+        hot_skus = []
+        for sku in skus:
+            hot_skus.append({
+                'id': sku.id,
+                'default_image_url': sku.default_image.url,
+                'name': sku.name,
+                'price': sku.price,
+            })
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'hot_skus': hot_skus})

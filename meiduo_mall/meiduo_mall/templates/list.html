@@ -271,17 +271,12 @@
 			<div class="new_goods">
 				<h3>热销排行</h3>
 				<ul>
-					<li>
-						<a href="detail.html"><img src="{{ static('images/goods/goods001.jpg') }}"></a>
-						<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-						<div class="price">￥3999.90</div>
-					</li>
-					<li>
-						<a href="detail.html"><img src="{{ static('images/goods/goods002.jpg') }}"></a>
-						<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-						<div class="price">￥1666.80</div>
-					</li>
-				</ul>
+                    <li v-for="sku in hot_skus">
+                        <a :href="sku.url"><img :src="sku.default_image_url"></a>
+                        <h4><a :href="sku.url">[[ sku.name ]]</a></h4>
+                        <div class="price">￥[[ sku.price ]]</div>
+                    </li>
+                </ul>
 			</div>
 		</div>
 		<div class="r_wrap fr clearfix">
@@ -330,7 +325,7 @@
 	</div>
 	</div>
 	<script type="text/javascript">
-        let category_id = "";
+        let category_id = {{ category_id }};
     </script>
 	<script type="text/javascript" src="{{ static('js/common.js') }}"></script>
 	<script type="text/javascript" src="{{ static('js/list.js') }}"></script>
