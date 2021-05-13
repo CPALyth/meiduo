@@ -3,12 +3,14 @@ from collections import OrderedDict
 from django.shortcuts import render
 from django.views import View
 
+from .models import ContentCategory
 from goods.models import GoodsChannel
 
 class IndexView(View):
     """首页广告"""
     def get(self, request):
         """提供首页广告界面"""
+        # --------------------- 准备商品分类对应的字典 ---------------------
         categories = OrderedDict()
         channels = GoodsChannel.objects.order_by('group_id', 'sequence')
         # 遍历所有频道
@@ -34,42 +36,17 @@ class IndexView(View):
                     'name': cat2.name,
                     'sub_cats': cat2.sub_cats,
                 })
+        # --------------------- 查询首页广告数据 ---------------------
+        contents = OrderedDict()  # 用来装广告
+        content_categories = ContentCategory.objects.all()
+        for content_category in content_categories:
+            key = content_category.key
+            contents[key] = content_category.content_set.filter(status=True).order_by('sequence')
         # 渲染模板的上下文
         context = {
             'categories': categories,
+            'contents': contents,
         }
         return render(request, 'index.html', context)
 
 
-"""
-{
-    "1":{
-        "channels":[
-            {"id":1, "name":"手机", "url":"http://shouji.jd.com/"},
-            {"id":2, "name":"相机", "url":"http://www.itcast.cn/"}
-        ],
-        "sub_cats":[
-            {
-                "id":38, 
-                "name":"手机通讯", 
-                "sub_cats":[
-                    {"id":115, "name":"手机"},
-                    {"id":116, "name":"游戏手机"}
-                ]
-            },
-            {
-                "id":39, 
-                "name":"手机配件", 
-                "sub_cats":[
-                    {"id":119, "name":"手机壳"},
-                    {"id":120, "name":"贴膜"}
-                ]
-            }
-        ]
-    },
-    "2":{
-        "channels":[],
-        "sub_cats":[]
-    }
-}
-"""
