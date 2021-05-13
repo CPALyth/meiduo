@@ -1,10 +1,12 @@
+import time
+
 from django.shortcuts import render
 from django.views import View
 from django import http
 from django.core.paginator import Paginator
 
 from meiduo_mall.utils.response_code import RETCODE
-from .models import GoodsCategory, SKU
+from .models import GoodsCategory, SKU, GoodsVisitCount
 from .utils import get_breadcrumb
 from contents.utils import get_categories
 
@@ -132,3 +134,29 @@ class DetailView(View):
             print(spec)
 
         return render(request, 'detail.html', context)
+
+class DetailVisitView(View):
+    """统计分类商品的访问量"""
+    def post(self, request, category_id):
+        # 接收参数, 校验参数
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except:
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '商品类别不存在'})
+        # 获取当天日期
+        today_str = time.strftime('%Y-%m-%d')
+        # 统计指定分类商品的访问量
+        try:  # 若存在, 获取对象
+            counts_data = GoodsVisitCount.objects.get(category=category, date=today_str)
+        except:  # 若不存在, 创建对象
+            counts_data = GoodsVisitCount()
+        # 给当天的访问量+1
+        try:
+            counts_data.category = category
+            counts_data.date = today_str
+            counts_data.count += 1
+            counts_data.save()
+        except:
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '增加商品访问量失败'})
+        # 响应结果
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
