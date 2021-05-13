@@ -106,7 +106,7 @@
     <div class="pos_center_con clearfix">
         <ul class="slide">
             {% for content in contents.index_lbt %}
-                <li><a href="{{ content.url }}">{{ content.title }}</a></li>
+                <li><a href="{{ content.url }}"><img src="{{ content.image.url }}" alt="{{ content.title }}"></a></li>
             {% endfor %}
         </ul>
         <div class="prev"></div>
