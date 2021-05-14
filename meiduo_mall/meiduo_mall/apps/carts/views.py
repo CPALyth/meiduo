@@ -186,7 +186,6 @@ class CartsView(View):
             response.set_cookie('carts', cart_str)
             return response
 
-
     def delete(self, request):
         """删除购物车"""
         json_dict = json.loads(request.body.decode())
@@ -261,3 +260,36 @@ class CartsSelectAllView(View):
                 response.set_cookie('carts', cart_str)
             # 响应结果
             return response
+
+
+class CartsSimpleView(View):
+    """商品页面右上角购物车"""
+    def get(self, request):
+        user = request.user
+        if user.is_authenticated:
+            # 查询redis购物车
+            redis_conn = get_redis_connection('carts')
+            redis_cart = redis_conn.hgetall('carts_{}'.format(user.id))
+            redis_selected = redis_conn.smembers('selected_{}'.format(user.id))
+            cart_dict = {}
+            for key, val in redis_cart.items():
+                sku_id = int(key)
+                count = int(val)
+                cart_dict[sku_id] = {
+                    'count': count,
+                    'selected': key in redis_selected,
+                }
+        else:
+            # 查询cookie购物车
+            cart_dict = get_cart_dict_from_cookie(request)
+        sku_ids = cart_dict.keys()
+        skus = SKU.objects.filter(id__in=sku_ids)
+        cart_skus = []
+        for sku in skus:
+            cart_skus.append({
+                'id': sku.id,
+                'name': sku.name,
+                'count': cart_dict[sku.id].get('count'),
+                'default_image_url': sku.default_image.url,
+            })
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'cart_skus': cart_skus})

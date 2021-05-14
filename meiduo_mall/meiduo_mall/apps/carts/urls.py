@@ -7,4 +7,6 @@ urlpatterns = [
     path('carts/', views.CartsView.as_view(), name='info'),
     # 全选
     path('carts/selection/', views.CartsSelectAllView.as_view()),
+    # 简单购物车
+    path('carts/simple/', views.CartsSimpleView.as_view()),
 ]
