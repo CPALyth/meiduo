@@ -23,20 +23,20 @@ class CartsView(View):
         selected = json_dict.get('selected', True)
         # 校验参数
         if not all([sku_id, count]):
-            return http.HttpResponseForbidden('缺少必传参数')
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必传参数'})
 
         try:
             SKU.objects.get(id=sku_id)
         except:
-            return http.HttpResponseForbidden('参数sku_id错误')
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数sku_id错误'})
 
         try:
             count = int(count)
         except:
-            return http.HttpResponseForbidden('参数count错误')
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数count错误'})
 
         if not isinstance(selected, bool):
-            return http.HttpResponseForbidden('参数selected错误')
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数selected错误'})
 
         # 判断用户是否登录
         user = request.user
@@ -110,3 +110,7 @@ class CartsView(View):
             'cart_skus': cart_skus
         }
         return render(request, 'cart.html', context)
+
+    def put(self, request):
+        """修改购物车"""
+        # 接收参数
