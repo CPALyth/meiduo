@@ -9,7 +9,7 @@ from django_redis import get_redis_connection
 
 from goods.models import SKU
 from meiduo_mall.utils.response_code import RETCODE
-from .utils import get_cart_dict_from_cookie
+from .utils import get_cart_dict_from_cookie, cart_dict_to_str
 
 
 class CartsView(View):
@@ -64,9 +64,7 @@ class CartsView(View):
                 'selected': selected,
             }
             # 将购物车字典变为字符串
-            cart_dict_bytes = pickle.dumps(cart_dict)
-            cart_str_bytes = base64.b64encode(cart_dict_bytes)
-            cart_str = cart_str_bytes.decode()
+            cart_str = cart_dict_to_str(cart_dict)
             # 将新的购物车数据写到cookie
             response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
             response.set_cookie('carts', cart_str)
@@ -114,3 +112,76 @@ class CartsView(View):
     def put(self, request):
         """修改购物车"""
         # 接收参数
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+        count = json_dict.get('count')
+        selected = json_dict.get('selected', True)
+
+        # 判断参数是否齐全
+        if not all([sku_id, count]):
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必传参数'})
+        # 判断sku_id是否存在
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except:
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数sku_id错误'})
+        # 判断count是否为数字
+        try:
+            count = int(count)
+        except Exception:
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数count有误'})
+        # 判断selected是否为bool值
+        if not isinstance(selected, bool):
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数selected有误'})
+
+        # 判断用户是否登录
+        user = request.user
+        if user.is_authenticated:
+            # 用户已登录，修改redis购物车
+            redis_conn = get_redis_connection('carts')
+            pl = redis_conn.pipeline()
+            # 设置商品件数
+            pl.hset('carts_{}'.format(user.id), sku_id, count)
+            # 修改勾选状态
+            if selected:
+                pl.sadd('selected_{}'.format(user.id), sku_id)
+            else:
+                pl.srem('selected_{}'.format(user.id), sku_id)
+            # 执行
+            pl.execute()
+            # 构造响应数据
+            cart_sku = {
+                'id': sku_id,
+                'count': count,
+                'selected': selected,
+                'name': sku.name,
+                'price': sku.price,
+                'amount': sku.price * count,
+                'default_image_url': sku.default_image.url,
+            }
+            # 响应结果
+            return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'cart_sku': cart_sku})
+        else:
+            # 用户未登录，修改cookie购物车
+            cart_dict = get_cart_dict_from_cookie(request)
+            # 覆盖写入
+            cart_dict[sku_id] = {
+                'count': count,
+                'selected': selected,
+            }
+            # 构造响应数据
+            cart_sku = {
+                'id': sku_id,
+                'count': count,
+                'selected': selected,
+                'name': sku.name,
+                'price': sku.price,
+                'amount': sku.price * count,
+                'default_image_url': sku.default_image.url,
+            }
+            # 将购物车字典变为字符串
+            cart_str = cart_dict_to_str(cart_dict)
+            # 将新的购物车数据写到cookie
+            response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'cart_sku': cart_sku})
+            response.set_cookie('carts', cart_str)
+            return response
