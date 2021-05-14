@@ -43,13 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',
-    'contents',
-    'verifications',
-    'oauth',
-    'areas',
-    'goods',
+    'users',  # 用户
+    'contents',  # 内容(广告)
+    'verifications',  # 验证码
+    'oauth',  # 开放验证, 第三方登录
+    'areas',  # 地区
+    'goods',  # 商品
     'haystack',  # 全文检索
+    'carts',  # 购物车
 ]
 
 MIDDLEWARE = [
@@ -137,6 +138,13 @@ CACHES = {
     "history": { # 用户浏览记录
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://{}:6379/3".format(SERVER_IP),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "carts": {  # 购物车
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://{}:6379/4".format(SERVER_IP),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
