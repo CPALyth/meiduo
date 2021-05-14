@@ -15,6 +15,7 @@ from .utils import generate_verify_email_url, check_verify_email_token
 from meiduo_mall.utils.response_code import RETCODE
 from celery_tasks.email.tasks import send_virify_email
 from . import constants
+from carts.utils import merge_cart_cookie_redis
 
 logger = logging.getLogger('django')
 
@@ -74,6 +75,8 @@ class RegisterView(View):
         response = redirect(reverse('contents:index'))
         # 设置cookie
         response.set_cookie('username', user.username, max_age=3600 * 24 * 14)
+        # 用户登录成功, 把cookie购物车合并到redis购物车
+        response = merge_cart_cookie_redis(request, user, response)
         # 重定向到首页
         return response
 
