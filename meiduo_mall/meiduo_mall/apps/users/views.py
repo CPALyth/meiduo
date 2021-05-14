@@ -131,6 +131,8 @@ class LoginView(View):
             response = redirect(reverse('contents:index'))
         # 设置cookie
         response.set_cookie('username', user.username, max_age=3600*24*14)
+        # 用户登录成功, 把cookie购物车合并到redis购物车
+        response = merge_cart_cookie_redis(request, user, response)
         # 重定向到首页
         return response
 
