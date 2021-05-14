@@ -18,3 +18,11 @@ def cart_dict_to_str(cart_dict):
     cart_str_bytes = base64.b64encode(cart_dict_bytes)
     cart_str = cart_str_bytes.decode()
     return cart_str
+
+
+def cart_str_to_dict(cart_str):
+    """购物车字符串转字典"""
+    cart_str_bytes = cart_str.encode()
+    cart_dict_bytes = base64.b64decode(cart_str_bytes)
+    cart_dict = pickle.loads(cart_dict_bytes)
+    return cart_dict

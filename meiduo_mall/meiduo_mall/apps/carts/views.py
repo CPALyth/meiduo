@@ -9,7 +9,7 @@ from django_redis import get_redis_connection
 
 from goods.models import SKU
 from meiduo_mall.utils.response_code import RETCODE
-from .utils import get_cart_dict_from_cookie, cart_dict_to_str
+from .utils import get_cart_dict_from_cookie, cart_dict_to_str, cart_str_to_dict
 
 
 class CartsView(View):
@@ -228,7 +228,7 @@ class CartsSelectAllView(View):
         selected = json_dict.get('selected', True)
         # 校验参数
         if not isinstance(selected, bool):
-            return http.HttpResponseForbidden('参数selected有误')
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数selected有误'})
         # 判断用户是否登录
         user = request.user
         if user.is_authenticated:
@@ -249,17 +249,14 @@ class CartsSelectAllView(View):
             # 用户未登录, 操作cookie购物车
             cart_str = request.COOKIES.get('carts')
             response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
             if cart_str:
-                cart_str_bytes = cart_str.encode()
-                cart_dict_bytes = base64.b64decode(cart_str_bytes)
-                cart_dict = pickle.loads(cart_dict_bytes)
+                cart_dict = cart_str_to_dict(cart_str)
                 # 遍历所有的购物车记录
                 for sku_id in cart_dict:
                     cart_dict[sku_id]['selected'] = selected
                 # 将购物车字典变为字符串
-                cart_dict_bytes = pickle.dumps(cart_dict)
-                cart_str_bytes = base64.b64encode(cart_dict_bytes)
-                cart_str = cart_str_bytes.decode()
+                cart_str = cart_dict_to_str(cart_dict)
                 # 将新的购物车数据写到cookie
                 response.set_cookie('carts', cart_str)
             # 响应结果
