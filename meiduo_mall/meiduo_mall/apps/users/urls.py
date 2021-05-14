@@ -30,6 +30,8 @@ urlpatterns = [
     # 更新地址标题
     path('addresses/<int:address_id>/title/', views.UpdateTitleAddressView.as_view()),
     # 修改密码
-    path('passwords/', views.ChangePasswordView.as_view(), name='pass')
+    path('passwords/', views.ChangePasswordView.as_view(), name='pass'),
+    # 用户浏览记录
+    path('browse_histories/', views.UserBrowseHistory.as_view()),
 
 ]

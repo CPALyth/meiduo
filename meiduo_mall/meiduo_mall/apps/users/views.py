@@ -8,6 +8,7 @@ from django import http
 from django.urls import reverse
 from django_redis import get_redis_connection
 
+from goods.models import SKU
 from meiduo_mall.utils.views import LoginRequiredJsonMixin
 from .models import User, Address
 from .utils import generate_verify_email_url, check_verify_email_token
@@ -444,3 +445,48 @@ class ChangePasswordView(View):
         response = redirect(reverse('users:login'))
         response.delete_cookie('username')
         return response
+
+
+class UserBrowseHistory(LoginRequiredJsonMixin, View):
+    """用户浏览记录"""
+    def post(self, request):
+        """保存商品浏览记录"""
+        # 接收参数
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+        # 校验参数
+        try:
+            SKU.objects.get(id=sku_id)
+        except:
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '商品不存在'})
+        # 获取redis连接对象
+        redis_conn = get_redis_connection('history')
+        pl = redis_conn.pipeline()
+        key = 'history_{}'.format(request.user.id)
+        # 先移除
+        pl.lrem(key, 0, sku_id)
+        # 再添加
+        pl.lpush(key, sku_id)
+        # 再截取
+        pl.ltrim(key, 0, 4)
+        # 最后执行
+        pl.execute()
+        # 响应
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
+    def get(self, request):
+        """查询商品浏览记录"""
+        redis_conn = get_redis_connection('history')
+        key = 'history_{}'.format(request.user.id)
+        sku_ids = redis_conn.lrange(key, 0, -1)
+        skus = []
+        for sku_id in sku_ids:
+            sku = SKU.objects.get(id=sku_id)
+            skus.append({
+                'id': sku.id,
+                'name': sku.name,
+                'price': sku.price,
+                'default_image_url': sku.default_image.url,
+            })
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'skus': skus})
+
