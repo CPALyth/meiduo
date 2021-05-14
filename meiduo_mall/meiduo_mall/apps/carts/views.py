@@ -185,3 +185,36 @@ class CartsView(View):
             response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'cart_sku': cart_sku})
             response.set_cookie('carts', cart_str)
             return response
+
+
+    def delete(self, request):
+        """删除购物车"""
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+        # 判断sku_id是否存在
+        try:
+            SKU.objects.get(id=sku_id)
+        except:
+            return http.JsonResponse({'code': RETCODE.NODATAERR, 'errmsg': '参数sku_id错误'})
+        # 判断用户是否登录
+        user = request.user
+        if user.is_authenticated:
+            # 用户已登录, 删除redis购物车
+            redis_conn = get_redis_connection('carts')
+            pl = redis_conn.pipeline()
+            pl.hdel('carts_{}'.format(user.id), sku_id)
+            pl.srem('selected_{}'.format(user.id), sku_id)
+            pl.execute()
+            return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+        else:
+            # 用户未登录, 删除cookie购物车
+            cart_dict = get_cart_dict_from_cookie(request)
+            # 构造响应对象
+            response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+            if sku_id in cart_dict:
+                del cart_dict[sku_id]
+                # 将购物车字典变为字符串
+                cart_str = cart_dict_to_str(cart_dict)
+                # 响应写入新cookie
+                response.set_cookie('carts', cart_str)
+            return response

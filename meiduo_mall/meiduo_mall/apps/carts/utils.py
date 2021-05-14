@@ -11,6 +11,7 @@ def get_cart_dict_from_cookie(request):
         cart_dict = {}
     return cart_dict
 
+
 def cart_dict_to_str(cart_dict):
     """购物车字典转字符串"""
     cart_dict_bytes = pickle.dumps(cart_dict)
