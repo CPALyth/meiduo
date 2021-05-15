@@ -1,6 +1,6 @@
 from alipay import AliPay
 from django import http
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import View
 from django.conf import settings
@@ -9,6 +9,7 @@ from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJsonMixin
 from orders.models import OrderInfo
 from .utils import get_alipay_obj
+from .models import Payment
 
 
 class PaymentView(LoginRequiredJsonMixin, View):
@@ -49,3 +50,19 @@ class PaymentStatusView(View):
         success = alipay.verify(query_dict, sign)
         if not success:  # 订单支付失败，重定向到我的订单
             return redirect(reverse('orders:info'))
+        # 创建支付记录
+        order_id = query_dict.get('out_trade_no')
+        trade_id = query_dict.get('trade_no')
+        Payment.objects.create(
+            order_id = order_id,
+            trade_id = trade_id
+        )
+        # 修改订单状态为待评价, 省略未发货和未收货状态
+        OrderInfo.objects.filter(order_id=order_id, status=OrderInfo.ORDER_STATUS_ENUM['UNPAID']).update(
+            status=OrderInfo.ORDER_STATUS_ENUM['UNCOMMENT']
+        )
+        # 响应trade_id
+        context = {
+            'trade_id': trade_id
+        }
+        return render(request, 'pay_success.html', context)

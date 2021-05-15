@@ -19,7 +19,8 @@ class OrderInfo(BaseModel):
         "UNSEND": 2,
         "UNRECEIVED": 3,
         "UNCOMMENT": 4,
-        "FINISHED": 5
+        "FINISHED": 5,
+        "CANCELED": 6,
     }
     ORDER_STATUS_CHOICES = (
         (1, "待支付"),
