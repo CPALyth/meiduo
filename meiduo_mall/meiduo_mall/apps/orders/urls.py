@@ -7,4 +7,6 @@ urlpatterns = [
     path('orders/settlement/', views.OrderSettlementView.as_view(), name='settlement'),
     # 提交订单
     path('orders/commit/', views.OrderCommitView.as_view()),
+    # 提交订单成功
+    path('orders/success/', views.OrderSuccessView.as_view()),
 ]
