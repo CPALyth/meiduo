@@ -1,13 +1,14 @@
-import os
-
 from alipay import AliPay
 from django import http
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.views import View
 from django.conf import settings
 
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJsonMixin
 from orders.models import OrderInfo
+from .utils import get_alipay_obj
 
 
 class PaymentView(LoginRequiredJsonMixin, View):
@@ -20,15 +21,8 @@ class PaymentView(LoginRequiredJsonMixin, View):
         except:
             return http.JsonResponse({'code': RETCODE.PARAMERR, 'errmsg': '订单信息错误'})
 
-        # 创建支付宝支付对象
-        alipay = AliPay(
-            appid=settings.ALIPAY_APPID,
-            app_notify_url=None,  # 默认回调url
-            app_private_key_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "keys/app_private_key.pem"),
-            alipay_public_key_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "keys/alipay_public_key.pem"),
-            sign_type="RSA2",
-            debug=settings.ALIPAY_DEBUG
-        )
+        # 创建支付宝对象
+        alipay = get_alipay_obj()
 
         # 生成登录支付宝连接
         order_string = alipay.api_alipay_trade_page_pay(
@@ -41,3 +35,17 @@ class PaymentView(LoginRequiredJsonMixin, View):
         # 响应登录支付宝连接
         alipay_url = settings.ALIPAY_URL + "?" + order_string
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'alipay_url': alipay_url})
+
+class PaymentStatusView(View):
+    """保存订单支付结果"""
+    def get(self, request):
+        # QueryDict转为标准字典
+        query_dict = request.GET.dict()
+        # sign不能参与签名验证
+        sign = query_dict.pop('sign')
+        # 创建支付宝对象
+        alipay = get_alipay_obj()
+        # 检测链接是否是由支付宝重定向过来的
+        success = alipay.verify(query_dict, sign)
+        if not success:  # 订单支付失败，重定向到我的订单
+            return redirect(reverse('orders:info'))
