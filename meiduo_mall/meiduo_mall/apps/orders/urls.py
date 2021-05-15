@@ -9,4 +9,6 @@ urlpatterns = [
     path('orders/commit/', views.OrderCommitView.as_view()),
     # 提交订单成功
     path('orders/success/', views.OrderSuccessView.as_view()),
+    # 我的订单
+    path('orders/info/<int:page_num>/', views.UserOrderInfoView.as_view(), name='info'),
 ]

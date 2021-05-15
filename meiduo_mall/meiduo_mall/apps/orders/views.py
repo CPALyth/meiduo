@@ -3,6 +3,7 @@ from decimal import Decimal
 import datetime
 
 from django import http
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -14,6 +15,7 @@ from orders.models import OrderInfo, OrderGoods
 from orders.utils import get_sel_cart_dict
 from users.models import Address
 from goods.models import SKU
+from . import constants
 
 class OrderSettlementView(LoginRequiredMixin, View):
     """结算订单"""
@@ -154,3 +156,41 @@ class OrderSuccessView(LoginRequiredMixin, View):
             'pay_method': pay_method,
         }
         return render(request, 'order_success.html', context)
+
+
+class UserOrderInfoView(LoginRequiredMixin, View):
+    """我的订单"""
+    def get(self, request, page_num):
+        """提供我的订单页面"""
+        user = request.user
+        # 查询用户的所有订单
+        orders = user.orderinfo_set.order_by('-create_time')
+        # 遍历所有订单
+        for order in orders:
+            # 添加属性-订单状态
+            order.status_name = OrderInfo.ORDER_STATUS_CHOICES[order.status - 1][1]
+            # 添加属性-支付方式
+            order.pay_method_name = OrderInfo.PAY_METHOD_CHOICES[order.pay_method - 1][1]
+            order.sku_list = []
+            # 查询订单商品
+            order_goods = order.skus.all()
+            # 遍历订单商品
+            for order_good in order_goods:
+                sku = order_good.sku
+                sku.count = order_good.count
+                sku.amount = sku.price * sku.count
+                order.sku_list.append(sku)
+        # 分页
+        try:
+            page_num = int(page_num)
+            paginator = Paginator(orders, constants.ORDERS_LIST_LIMIT)
+            page_orders = paginator.page(page_num)
+            total_page = paginator.num_pages
+        except:
+            return http.HttpResponseNotFound('订单不存在')
+        context = {
+            'page_orders': page_orders,
+            'total_page': total_page,
+            'page_num': page_num,
+        }
+        return render(request, 'user_center_order.html', context)
