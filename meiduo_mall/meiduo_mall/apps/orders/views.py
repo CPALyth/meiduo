@@ -96,32 +96,40 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                 sel_cart_dict = get_sel_cart_dict(user)
                 sku_ids = sel_cart_dict.keys()
                 for sku_id in sku_ids:
-                    # 读取最新的购物车商品信息
-                    sku = SKU.objects.get(id=sku_id)
-                    # 获取要提交订单的商品数量
-                    commit_count = sel_cart_dict[sku.id]
-                    # 若提交数量大于商品库存
-                    if commit_count > sku.stock:
-                        transaction.savepoint_rollback(save_id)  # 库存不足, 回滚
-                        return http.JsonResponse({'code': RETCODE.STOCKERR, 'errmsg': '库存不足'})
-                    # sku减库存 加销量
-                    sku.stock -= commit_count
-                    sku.sales += commit_count
-                    sku.save()
-                    # spu加销量
-                    spu = sku.spu
-                    spu.sales += commit_count
-                    spu.save()
-                    # 创建订单商品信息
-                    OrderGoods.objects.create(
-                        order = order,
-                        sku = sku,
-                        count = commit_count,
-                        price = sku.price,
-                    )
-                    # 累加订单商品的数量和总价到订单基本信息表
-                    order.total_count += commit_count
-                    order.total_amount += commit_count * sku.price
+                    while True:  # 每个商品都有多次下单的机会, 直到库存不足
+                        # 读取最新的购物车商品信息
+                        sku = SKU.objects.get(id=sku_id)
+                        # 获取原始的库存和销量
+                        ori_stock = sku.stock
+                        ori_sales = sku.sales
+                        # 获取要提交订单的商品数量
+                        commit_count = sel_cart_dict[sku.id]
+                        # 若提交数量大于商品库存
+                        if commit_count > sku.stock:
+                            transaction.savepoint_rollback(save_id)  # 库存不足, 回滚
+                            return http.JsonResponse({'code': RETCODE.STOCKERR, 'errmsg': '库存不足'})
+                        # 乐观锁实现并发下单, sku减库存 加销量
+                        new_stock = ori_stock - commit_count
+                        new_sales = ori_sales - commit_count
+                        ret = SKU.objects.filter(stock=ori_stock, sales=ori_sales).update(stock=new_stock, sales=new_sales)
+                        if ret == 0:  # 失败, 回去重新查看库存是否足够
+                            continue
+                        # spu加销量
+                        spu = sku.spu
+                        spu.sales += commit_count
+                        spu.save()
+                        # 创建订单商品信息
+                        OrderGoods.objects.create(
+                            order = order,
+                            sku = sku,
+                            count = commit_count,
+                            price = sku.price,
+                        )
+                        # 累加订单商品的数量和总价到订单基本信息表
+                        order.total_count += commit_count
+                        order.total_amount += commit_count * sku.price
+                        # 下单成功, 跳出循环
+                        break
                 # 最后再加运费
                 order.total_amount += order.freight
                 order.save()
