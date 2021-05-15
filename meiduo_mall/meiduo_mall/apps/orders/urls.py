@@ -3,5 +3,8 @@ from . import views
 
 app_name = 'orders'
 urlpatterns = [
-    path('orders/settlement/', views.OrderSettlementView.as_view(), name='settlement')
+    # 结算订单
+    path('orders/settlement/', views.OrderSettlementView.as_view(), name='settlement'),
+    # 提交订单
+    path('orders/commit/', views.OrderCommitView.as_view()),
 ]
