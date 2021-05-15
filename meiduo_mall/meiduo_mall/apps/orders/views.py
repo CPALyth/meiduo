@@ -6,6 +6,7 @@ from django import http
 from django.shortcuts import render
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJsonMixin
@@ -75,49 +76,60 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
         # 获取订单编号
         user = request.user
         order_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '{:09d}'.format(user.id)
-        # 保存订单基本信息
-        order = OrderInfo.objects.create(
-            order_id = order_id,
-            user = user,
-            address = address,
-            total_count = 0,
-            total_amount = Decimal(0.00),
-            freight = Decimal(10.00),
-            pay_method = pay_method,
-            status = OrderInfo.ORDER_STATUS_ENUM['UNPAID'] if pay_method == OrderInfo.PAY_METHODS_ENUM['ALIPAY'] else OrderInfo.ORDER_STATUS_ENUM['UNSEND']
-        )
-        # 保存订单商品信息
-        sel_cart_dict = get_sel_cart_dict(user)
-        sku_ids = sel_cart_dict.keys()
-        for sku_id in sku_ids:
-            # 读取最新的购物车商品信息
-            sku = SKU.objects.get(id=sku_id)
-            # 获取要提交订单的商品数量
-            commit_count = sel_cart_dict[sku.id]
-            # 若提交数量大于商品库存
-            if commit_count > sku.stock:
-                return http.JsonResponse({'code': RETCODE.STOCKERR, 'errmsg': '库存不足'})
-            # sku减库存 加销量
-            sku.stock -= commit_count
-            sku.sales += commit_count
-            sku.save()
-            # spu加销量
-            spu = sku.spu
-            spu.sales += commit_count
-            spu.save()
-            # 创建订单商品信息
-            OrderGoods.objects.create(
-                order = order,
-                sku = sku,
-                count = commit_count,
-                price = sku.price,
-            )
-            # 累加订单商品的数量和总价到订单基本信息表
-            order.total_count += commit_count
-            order.total_amount += commit_count * sku.price
-        # 最后再加运费
-        order.total_amount += order.freight
-        order.save()
+
+        with transaction.atomic():
+            # 在数据库操作前创建保存点
+            save_id = transaction.savepoint()
+            try:
+                # 保存订单基本信息
+                order = OrderInfo.objects.create(
+                    order_id = order_id,
+                    user = user,
+                    address = address,
+                    total_count = 0,
+                    total_amount = Decimal(0.00),
+                    freight = Decimal(10.00),
+                    pay_method = pay_method,
+                    status = OrderInfo.ORDER_STATUS_ENUM['UNPAID'] if pay_method == OrderInfo.PAY_METHODS_ENUM['ALIPAY'] else OrderInfo.ORDER_STATUS_ENUM['UNSEND']
+                )
+                # 保存订单商品信息
+                sel_cart_dict = get_sel_cart_dict(user)
+                sku_ids = sel_cart_dict.keys()
+                for sku_id in sku_ids:
+                    # 读取最新的购物车商品信息
+                    sku = SKU.objects.get(id=sku_id)
+                    # 获取要提交订单的商品数量
+                    commit_count = sel_cart_dict[sku.id]
+                    # 若提交数量大于商品库存
+                    if commit_count > sku.stock:
+                        transaction.savepoint_rollback(save_id)  # 库存不足, 回滚
+                        return http.JsonResponse({'code': RETCODE.STOCKERR, 'errmsg': '库存不足'})
+                    # sku减库存 加销量
+                    sku.stock -= commit_count
+                    sku.sales += commit_count
+                    sku.save()
+                    # spu加销量
+                    spu = sku.spu
+                    spu.sales += commit_count
+                    spu.save()
+                    # 创建订单商品信息
+                    OrderGoods.objects.create(
+                        order = order,
+                        sku = sku,
+                        count = commit_count,
+                        price = sku.price,
+                    )
+                    # 累加订单商品的数量和总价到订单基本信息表
+                    order.total_count += commit_count
+                    order.total_amount += commit_count * sku.price
+                # 最后再加运费
+                order.total_amount += order.freight
+                order.save()
+            except:
+                transaction.savepoint_rollback(save_id)
+                return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '下单失败'})
+            # 提交事务
+            transaction.savepoint_commit(save_id)
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'order_id': order_id})
 
 
