@@ -1,6 +1,7 @@
 import json
 from decimal import Decimal
 import datetime
+import logging
 
 from django import http
 from django.core.paginator import Paginator
@@ -16,6 +17,8 @@ from orders.utils import get_sel_cart_dict
 from users.models import Address
 from goods.models import SKU
 from . import constants
+
+logger = logging.getLogger('django')
 
 class OrderSettlementView(LoginRequiredMixin, View):
     """结算订单"""
@@ -232,3 +235,38 @@ class OrderCommentView(LoginRequiredMixin, View):
             'skus': skus
         }
         return render(request, 'goods_judge.html', context)
+
+    def post(self, request):
+        """处理提交商品评价"""
+        # 接收参数
+        json_dict = json.loads(request.body.decode())
+        order_id = json_dict.get('order_id')
+        sku_id = json_dict.get('sku_id')
+        comment = json_dict.get('comment')
+        score = json_dict.get('score', 5)
+        is_anonymous = json_dict.get('is_anonymous', True)
+        # 校验参数
+        if not all([order_id, sku_id, comment]):
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必传参数'})
+
+        if not isinstance(score, int) or not isinstance(is_anonymous, bool):
+            return http.JsonResponse({'code': RETCODE.PARAMERR, 'errmsg': '参数score或is_anonymous类型错误'})
+
+        if len(comment) < 5:
+            return http.JsonResponse({'code': RETCODE.PARAMERR, 'errmsg': '参数comment错误'})
+
+        try:
+            order_goods = OrderGoods.objects.get(order_id=order_id, sku_id=sku_id, is_commented=False)
+        except:
+            return http.JsonResponse({'code': RETCODE.PARAMERR, 'errmsg': '参数sku_id错误'})
+        # 保存商品评价
+        try:
+            order_goods.comment = comment
+            order_goods.score = score
+            order_goods.is_anonymous = is_anonymous
+            order_goods.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '保存商品评价数据库异常'})
+        # 响应结果
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
