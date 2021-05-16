@@ -11,4 +11,6 @@ urlpatterns = [
     path('orders/success/', views.OrderSuccessView.as_view()),
     # 我的订单
     path('orders/info/<int:page_num>/', views.UserOrderInfoView.as_view(), name='info'),
+    # 商品评价
+    path('orders/comment/', views.OrderCommentView.as_view(), name='comment'),
 ]
