@@ -112,6 +112,14 @@ DATABASES = {
         'USER': 'ws', # 数据库用户名
         'PASSWORD': '123456', # 数据库用户密码
         'NAME': 'meiduo' # 数据库名字
+    },
+    'slave': {  # 读(从机)
+        'ENGINE': 'django.db.backends.mysql', # 数据库引擎
+        'HOST': SERVER_IP, # 数据库主机
+        'PORT': 8306, # 数据库端口
+        'USER': 'root', # 数据库用户名
+        'PASSWORD': '123456', # 数据库用户密码
+        'NAME': 'meiduo' # 数据库名字
     }
 }
 
@@ -301,3 +309,6 @@ CRONJOBS = [
 ]
 # 避免提示中文字符异常错误
 CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
+
+# MySQL读写分离路由
+DATABASES_ROUTERS = ['meiduo_mall.utils.db_router.MasterSlaveDBRouter']
