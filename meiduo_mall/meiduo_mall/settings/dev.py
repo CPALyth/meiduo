@@ -338,6 +338,8 @@ REST_FRAMEWORK = {
 }
 # 指定JWT的配置
 JWT_AUTH = {
-    # 指明token的有效期
+    # 指定token的有效期
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    # 指定返回结果方法
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'meiduo_admin.utils.jwt_response_payload_handler',
 }
