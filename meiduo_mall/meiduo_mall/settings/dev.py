@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+import datetime
 from pathlib import Path
 
 SERVER_IP = '192.168.250.130'
@@ -55,9 +56,11 @@ INSTALLED_APPS = [
     'payment',  # 支付
     'django_crontab', # 定时任务
     'meiduo_admin',  # 美多后台
+    'corsheaders',  # 跨域访问
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -313,3 +316,28 @@ CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
 
 # MySQL读写分离路由
 DATABASES_ROUTERS = ['meiduo_mall.utils.db_router.MasterSlaveDBRouter']
+
+# CORS
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:8000',
+    'http://localhost:8080',
+    'http://www.meiduo.site:8080',
+    'http://api.meiduo.site:8000'
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
+# REST框架配置
+REST_FRAMEWORK = {
+    # 指定认证方式
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+# 指定JWT的配置
+JWT_AUTH = {
+    # 指明token的有效期
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+}
