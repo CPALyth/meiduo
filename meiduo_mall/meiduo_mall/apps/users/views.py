@@ -172,7 +172,7 @@ class EmailView(View):
         json_dict = json.loads(request.body.decode())
         email = json_dict.get('email')
         # 校验参数
-        pat = r'^[a-zA-Z0-9]+[a-zA-Z0-9_-]+@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$'
+        pat = r'^[a-zA-Z0-9]+[a-zA-Z0-9_-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$'
         if not re.match(pat, email):
             return http.JsonResponse({'code': RETCODE.EMAILERR, 'errmsg': '参数email有误'})
         # 保存邮箱到数据库
