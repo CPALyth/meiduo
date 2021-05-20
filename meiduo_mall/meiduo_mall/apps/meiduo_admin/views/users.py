@@ -10,3 +10,11 @@ class UserView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = MyPagination
+
+    def get_queryset(self):
+        """重写获取查询集方法"""
+        username = self.request.query_params.get('keyword')
+        if username:
+            return User.objects.filter(username__contains=username)
+        else:
+            return User.objects.all()
