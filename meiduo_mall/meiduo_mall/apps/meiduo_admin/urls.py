@@ -1,10 +1,12 @@
 from django.urls import path
 from rest_framework_jwt.views import obtain_jwt_token
 from .views import statistical
+from .views import users
 
 urlpatterns = [
-    # 后台登录
+    # ---------------- 后台登录 ----------------
     path('authorizations/', obtain_jwt_token),
+
     # ---------------- 数据统计 ----------------
     # 用户总数
     path('statistical/total_count/', statistical.UserTotalCountView.as_view()),
@@ -19,4 +21,7 @@ urlpatterns = [
     # 日分类商品
     path('statistical/goods_day_views/', statistical.UserGoodsCountView.as_view()),
 
+    # ---------------- 用户管理 ----------------
+    # 查询用户
+    path('users/', users.UserView.as_view()),
 ]
