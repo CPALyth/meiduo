@@ -22,6 +22,6 @@ urlpatterns = [
     path('statistical/goods_day_views/', statistical.UserGoodsCountView.as_view()),
 
     # ---------------- 用户管理 ----------------
-    # 查询用户
+    # 查询用户, 新增用户
     path('users/', users.UserView.as_view()),
 ]
