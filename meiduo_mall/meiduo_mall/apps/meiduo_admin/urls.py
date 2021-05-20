@@ -14,4 +14,9 @@ urlpatterns = [
     path('statistical/day_active/', statistical.UserDayActiveView.as_view()),
     # 下单用户
     path('statistical/day_orders/', statistical.UserDayOrderView.as_view()),
+    # 月增用户
+    path('statistical/month_increment/', statistical.UserMonthIncrementView.as_view()),
+    # 日分类商品
+    path('statistical/goods_day_views/', statistical.UserGoodsCountView.as_view()),
+
 ]

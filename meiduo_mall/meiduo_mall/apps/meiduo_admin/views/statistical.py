@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
 from users.models import User
+from goods.models import GoodsVisitCount
+from ..serializer.statistical import UserGoodsCountSerializer
 
 class UserTotalCountView(APIView):
     """用户总数统计"""
@@ -62,3 +64,37 @@ class UserDayOrderView(APIView):
             'count': count,
             'date': now_date,
         })
+
+class UserMonthIncrementView(APIView):
+    """月增用户数统计"""
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # 获取当前日期
+        now_date = datetime.date.today()
+        # 获取29天前的日期
+        start_date = now_date - datetime.timedelta(days=29)
+        # 保存30天的用户数
+        date_list = []
+        for i in range(30):
+            cur_date = start_date + datetime.timedelta(days=i)
+            after_date = cur_date + datetime.timedelta(days=1)
+            count = User.objects.filter(date_joined__gte=cur_date, date_joined__lte=after_date).count()
+            date_list.append({
+                'count': count,
+                'date': cur_date,
+            })
+        return Response(date_list)
+
+
+class UserGoodsCountView(APIView):
+    """日分类商品访问量统计"""
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # 获取当前日期
+        now_date = datetime.date.today()
+        # 获取今日分类商品访问量
+        gvcs = GoodsVisitCount.objects.filter(date__gte=now_date)
+        ser = UserGoodsCountSerializer(gvcs, many=True)
+        return Response(ser.data)
