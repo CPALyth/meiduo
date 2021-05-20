@@ -27,9 +27,11 @@ urlpatterns = [
     # 查询用户, 新增用户
     path('users/', users.UserView.as_view()),
 
+    # ---------------- 商品管理 ----------------
+    # 规格路由表
+    path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'}))
 ]
 
 router = DefaultRouter()
 router.register('goods/specs', specs.SpecsView, basename='specs')
-print(router.urls)
 urlpatterns += router.urls
