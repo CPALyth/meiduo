@@ -1,7 +1,9 @@
 from django.urls import path
 from rest_framework_jwt.views import obtain_jwt_token
+from rest_framework.routers import DefaultRouter
+
 from .views import statistical
-from .views import users
+from .views import users, specs
 
 urlpatterns = [
     # ---------------- 后台登录 ----------------
@@ -24,4 +26,10 @@ urlpatterns = [
     # ---------------- 用户管理 ----------------
     # 查询用户, 新增用户
     path('users/', users.UserView.as_view()),
+
 ]
+
+router = DefaultRouter()
+router.register('goods/specs', specs.SpecsView, basename='specs')
+print(router.urls)
+urlpatterns += router.urls
