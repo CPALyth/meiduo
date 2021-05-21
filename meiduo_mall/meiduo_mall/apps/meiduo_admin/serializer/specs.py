@@ -4,7 +4,7 @@ from goods.models import SPUSpecification, SPU
 class SpecsSerializer(serializers.ModelSerializer):
     """商品规格序列化器"""
     spu = serializers.StringRelatedField(read_only=True)
-    spu_id = serializers.PrimaryKeyRelatedField(read_only=True)
+    spu_id = serializers.IntegerField()
     class Meta:
         model = SPUSpecification
         fields = ['id', 'name', 'spu', 'spu_id']
