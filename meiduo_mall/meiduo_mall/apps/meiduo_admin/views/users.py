@@ -1,7 +1,7 @@
 from rest_framework.generics import ListCreateAPIView
 
 from users.models import User
-from ..serializer.users import UserSerializer
+from ..serializers.users import UserSerializer
 from ..utils import MyPagination
 
 

@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAdminUser
 
 from users.models import User
 from goods.models import GoodsVisitCount
-from ..serializer.statistical import UserGoodsCountSerializer
+from ..serializers.statistical import UserGoodsCountSerializer
 
 class UserTotalCountView(APIView):
     """用户总数统计"""

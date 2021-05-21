@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from goods.models import SPUSpecification, SPU
-from ..serializer.specs import SpecsSerializer, SPUSerializer
+from ..serializers.specs import SpecsSerializer, SPUSerializer
 from ..utils import MyPagination
 
 class SpecsView(ModelViewSet):
