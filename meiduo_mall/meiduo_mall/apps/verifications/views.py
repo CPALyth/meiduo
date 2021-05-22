@@ -10,8 +10,6 @@ from . import constants
 from celery_tasks.sms.tasks import send_sms_code
 
 # 创建日志输出器
-from celery_tasks.sms.yuntongxun.ccp_sms import CCP
-
 logger = logging.getLogger('django')
 
 class SMSCodeView(View):

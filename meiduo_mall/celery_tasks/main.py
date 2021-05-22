@@ -10,4 +10,8 @@ if not os.getenv('DJANGO_SETTINGS_MODULE'):
 celery_app = Celery('meiduo', broker='redis://{}/10'.format(settings.SERVER_IP))
 
 # 注册任务
-celery_app.autodiscover_tasks(['celery_tasks.sms'])
+celery_app.autodiscover_tasks([
+    'celery_tasks.sms',
+    'celery_tasks.email',
+    'celery_tasks.static',
+])

@@ -94,7 +94,7 @@ class DetailView(View):
         for spec in sku_specs:
             sku_key.append(spec.option.id)
         # 获取当前商品的所有SKU
-        skus = sku.spu.sku_set.all()
+        skus = sku.spu.skus.all()
         # 构建不同规格参数（选项）的sku字典
         spec_sku_map = {}  # {(8, 11): 3, (8, 12): 4, (9, 11): 5, (9, 12): 6, (10, 11): 7, (10, 12): 8}
         for s in skus:

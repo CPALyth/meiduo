@@ -3,6 +3,7 @@ from fdfs_client.client import Fdfs_client
 from rest_framework import serializers
 
 from goods.models import SKUImage, SKU
+from celery_tasks.static.tasks import get_detail_html
 
 
 class ImagesSerializer(serializers.ModelSerializer):
@@ -26,6 +27,8 @@ class ImagesSerializer(serializers.ModelSerializer):
         sku_id = validated_data.get('sku').id
         image = ret['Remote file_id']
         sku_img = SKUImage.objects.create(sku_id=sku_id, image=image)
+        # 异步生成详情页静态页面
+        get_detail_html.delay(sku_id)
         return sku_img
 
     def update(self, instance, validated_data):
@@ -43,6 +46,8 @@ class ImagesSerializer(serializers.ModelSerializer):
         image = ret['Remote file_id']
         instance.image = image
         instance.save()
+        # 异步生成详情页静态页面
+        get_detail_html.delay(instance.sku.id)
         return instance
 
 

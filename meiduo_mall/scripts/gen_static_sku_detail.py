@@ -37,7 +37,7 @@ def generate_static_sku_detail_html(sku_id):
     for spec in sku_specs:
         sku_key.append(spec.option.id)
     # 获取当前商品的所有SKU
-    skus = sku.spu.sku_set.all()
+    skus = sku.spu.skus.all()
     # 构建不同规格参数（选项）的sku字典
     spec_sku_map = {}
     for s in skus:
