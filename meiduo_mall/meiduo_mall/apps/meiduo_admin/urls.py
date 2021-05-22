@@ -28,7 +28,11 @@ urlpatterns = [
 
     # ---------------- 商品管理 ----------------
     # 规格路由
-    path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'}))
+    path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'})),
+
+    # ---------------- 图片管理 ----------------
+    # 图片路由
+    path('skus/simple/', images.ImagesView.as_view({'get': 'simple'})),
 ]
 
 # 规格路由
