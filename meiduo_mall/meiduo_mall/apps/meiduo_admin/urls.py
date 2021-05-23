@@ -26,25 +26,24 @@ urlpatterns = [
     # 查询用户, 新增用户
     path('users/', users.UserView.as_view()),
 
-    # ---------------- 商品管理 ----------------
     # 规格管理
     path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'})),
     # 图片管理
     path('skus/simple/', images.ImagesView.as_view({'get': 'simple'})),
-
 ]
 
-# 规格路由
+# ---------------- 商品管理 ----------------
+# 规格管理
 router = DefaultRouter()
 router.register('goods/specs', specs.SpecsView, basename='specs')
 urlpatterns += router.urls
 
-# 图片路由
+# 图片管理
 router = DefaultRouter()
 router.register('skus/images', images.ImagesView, basename='images')
 urlpatterns += router.urls
 
-# SKU路由
+# SKU管理
 router = DefaultRouter()
 router.register('skus', skus.SKUView, basename='skus')
 urlpatterns += router.urls

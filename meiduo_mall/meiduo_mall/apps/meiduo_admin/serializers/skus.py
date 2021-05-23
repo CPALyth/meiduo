@@ -26,8 +26,10 @@ class SKUSerializer(serializers.ModelSerializer):
             'specs'
         ]
 
+
 class SKUCategorySerializer(serializers.ModelSerializer):
     """SKU分类序列化器"""
+
     class Meta:
         model = GoodsCategory
         fields = ['id', 'name']

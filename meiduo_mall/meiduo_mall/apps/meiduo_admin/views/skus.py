@@ -9,25 +9,14 @@ from ..serializers.skus import SKUSerializer, SKUCategorySerializer
 
 class SKUView(ModelViewSet):
     """SKU表的增删改查"""
+    queryset = SKU.objects.all()
+    serializer_class = SKUSerializer
     pagination_class = MyPagination
     permission_classes = [IsAdminUser]
-
-    def get_queryset(self):
-        if self.action == 'categories':
-            return GoodsCategory.objects.filter(subs=None)
-        else:
-            return SKU.objects.all()
-
-    def get_serializer_class(self):
-        if self.action == 'categories':
-            return SKUCategorySerializer
-        else:
-            return SKUSerializer
 
     @action(methods=['get'], detail=False)
     def categories(self, request):
         """自定义方法, 获取所有商品三级分类数据"""
-        # 只查三级分类
-        goods_categories = self.get_queryset()
-        ser = self.get_serializer(goods_categories, many=True)
+        categories = GoodsCategory.objects.filter(subs=None)
+        ser = SKUCategorySerializer(categories, many=True)
         return Response(ser.data)
