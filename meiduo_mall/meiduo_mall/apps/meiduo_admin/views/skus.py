@@ -1,6 +1,5 @@
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
@@ -10,14 +9,25 @@ from ..serializers.skus import SKUSerializer, SKUCategorySerializer
 
 class SKUView(ModelViewSet):
     """SKU表的增删改查"""
-    serializer_class = SKUSerializer
-    queryset = SKU.objects.all()
     pagination_class = MyPagination
     permission_classes = [IsAdminUser]
 
-class SKUCategoryView(ListAPIView):
-    """SKU三级分类-查询全部"""
-    serializer_class = SKUCategorySerializer
-    queryset = GoodsCategory.objects.filter(subs=None)  # 只查三级分类
+    def get_queryset(self):
+        if self.action == 'categories':
+            return GoodsCategory.objects.filter(subs=None)
+        else:
+            return SKU.objects.all()
 
+    def get_serializer_class(self):
+        if self.action == 'categories':
+            return SKUCategorySerializer
+        else:
+            return SKUSerializer
 
+    @action(methods=['get'], detail=False)
+    def categories(self, request):
+        """自定义方法, 获取所有商品三级分类数据"""
+        # 只查三级分类
+        goods_categories = self.get_queryset()
+        ser = self.get_serializer(goods_categories, many=True)
+        return Response(ser.data)
