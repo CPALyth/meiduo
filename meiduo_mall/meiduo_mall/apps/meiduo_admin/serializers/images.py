@@ -10,7 +10,7 @@ class ImagesSerializer(serializers.ModelSerializer):
     """商品图片序列化器"""
     class Meta:
         model = SKUImage
-        fields = ['id', 'sku', 'image']
+        fields = ('id', 'sku', 'image')
 
     def create(self, validated_data):
         # 创建FDFS客户端对象
@@ -55,4 +55,4 @@ class SKUSerializer(serializers.ModelSerializer):
     """SKU序列化器"""
     class Meta:
         model = SKU
-        fields = ['id', 'name']
+        fields = ('id', 'name')

@@ -26,6 +26,7 @@ urlpatterns = [
     # 查询用户, 新增用户
     path('users/', users.UserView.as_view()),
 
+    # ---------------- 商品管理 ----------------
     # 规格管理
     path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'})),
     # 图片管理

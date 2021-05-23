@@ -7,11 +7,11 @@ class SpecsSerializer(serializers.ModelSerializer):
     spu_id = serializers.IntegerField()
     class Meta:
         model = SPUSpecification
-        fields = ['id', 'name', 'spu', 'spu_id']
+        fields = ('id', 'name', 'spu', 'spu_id')
 
 
 class SPUSerializer(serializers.ModelSerializer):
     """SPU序列化器"""
     class Meta:
         model = SPU
-        fields = ['id', 'name']
+        fields = ('id', 'name')
