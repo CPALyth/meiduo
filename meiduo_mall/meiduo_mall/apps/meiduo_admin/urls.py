@@ -27,12 +27,12 @@ urlpatterns = [
     path('users/', users.UserView.as_view()),
 
     # ---------------- 商品管理 ----------------
-    # 规格路由
+    # 规格管理
     path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'})),
-
-    # ---------------- 图片管理 ----------------
-    # 图片路由
+    # 图片管理
     path('skus/simple/', images.ImagesView.as_view({'get': 'simple'})),
+    # SKU管理
+    path('skus/categories/', skus.SKUCategoryView.as_view()),
 ]
 
 # 规格路由
