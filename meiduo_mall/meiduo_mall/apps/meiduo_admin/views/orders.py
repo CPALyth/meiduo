@@ -7,8 +7,6 @@ from ..utils import MyPagination
 
 
 class OrderView(ReadOnlyModelViewSet):
-    queryset = OrderInfo.objects.all()
-    serializer_class = OrderInfoSerializer
     pagination_class = MyPagination
     permission_classes = [IsAdminUser]
 
@@ -16,3 +14,9 @@ class OrderView(ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             return OrderInfoSerializer
         return OrderSerializer
+
+    def get_queryset(self):
+        keyword = self.request.query_params.get('keyword')
+        if keyword:
+            return OrderInfo.objects.filter(order_id__contains=keyword)
+        return OrderInfo.objects.all()
