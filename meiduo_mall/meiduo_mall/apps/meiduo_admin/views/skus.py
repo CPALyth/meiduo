@@ -14,6 +14,12 @@ class SKUView(ModelViewSet):
     pagination_class = MyPagination
     permission_classes = [IsAdminUser]
 
+    def get_queryset(self):
+        keyword = self.request.query_params.get('keyword')
+        if keyword:
+            return SKU.objects.filter(name__contains=keyword)
+        return SKU.objects.all()
+
     @action(methods=['get'], detail=False)
     def categories(self, request):
         """自定义方法, 获取所有商品三级分类数据"""
