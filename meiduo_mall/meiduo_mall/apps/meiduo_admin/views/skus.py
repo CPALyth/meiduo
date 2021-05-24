@@ -3,9 +3,9 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from goods.models import SKU, GoodsCategory
+from goods.models import SKU, GoodsCategory, SPU
 from ..utils import MyPagination
-from ..serializers.skus import SKUSerializer, SKUCategorySerializer
+from ..serializers.skus import SKUSerializer, SKUCategorySerializer, SPUSpecSerializer
 
 class SKUView(ModelViewSet):
     """SKU表的增删改查"""
@@ -19,4 +19,11 @@ class SKUView(ModelViewSet):
         """自定义方法, 获取所有商品三级分类数据"""
         categories = GoodsCategory.objects.filter(subs=None)
         ser = SKUCategorySerializer(categories, many=True)
+        return Response(ser.data)
+
+    def specs(self, request, pk):
+        """获取SPU商品规格信息"""
+        spu = SPU.objects.get(id=pk)
+        spu_specs = spu.specs.all()
+        ser = SPUSpecSerializer(spu_specs, many=True)
         return Response(ser.data)

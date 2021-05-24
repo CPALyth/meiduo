@@ -31,6 +31,8 @@ urlpatterns = [
     path('goods/simple/', specs.SpecsView.as_view({'get': 'simple'})),
     # 图片管理
     path('skus/simple/', images.ImagesView.as_view({'get': 'simple'})),
+    # SKU管理
+    path('goods/<int:pk>/specs/', skus.SKUView.as_view({'get': 'specs'})),
 ]
 
 # ---------------- 商品管理 ----------------

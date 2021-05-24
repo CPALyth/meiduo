@@ -13,9 +13,11 @@ class SKUSpecSerializer(serializers.ModelSerializer):
 
 
 class SKUSerializer(serializers.ModelSerializer):
-    """SKU表序列化器"""
+    """SKU序列化器"""
     spu = serializers.StringRelatedField()
+    spu_id = serializers.IntegerField()
     category = serializers.StringRelatedField()
+    category_id = serializers.IntegerField()
     specs = SKUSpecSerializer(read_only=True, many=True)
 
     class Meta:
@@ -33,3 +35,21 @@ class SKUCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = GoodsCategory
         fields = ('id', 'name')
+
+
+class SPUSpecOptionSerializer(serializers.ModelSerializer):
+    """SPU规格选项序列化器"""
+
+    class Meta:
+        model = SpecificationOption
+        fields = ('id', 'value')
+
+
+class SPUSpecSerializer(serializers.ModelSerializer):
+    """SPU规格序列化器"""
+    spu = serializers.StringRelatedField()
+    options = SPUSpecOptionSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = SPUSpecification
+        fields = ('id', 'name', 'spu', 'spu_id', 'options')
