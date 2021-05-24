@@ -1,5 +1,6 @@
+from django.db import transaction
 from rest_framework import serializers
-from goods.models import SKU, SKUSpecification, GoodsCategory, SPU
+from goods.models import SKU, SKUSpecification, GoodsCategory, SPUSpecification, SpecificationOption
 
 
 class SKUSpecSerializer(serializers.ModelSerializer):
@@ -27,6 +28,25 @@ class SKUSerializer(serializers.ModelSerializer):
             'price', 'cost_price', 'market_price', 'stock', 'sales', 'is_launched',
             'specs'
         )
+
+    def create(self, validated_data):
+        specs = self.context['request'].data.get('specs')
+        with transaction.atomic():
+            save_point = transaction.savepoint()
+            try:
+                # 保存SKU表
+                sku = SKU.objects.create(**validated_data)
+                # 保存SKU具体规格表
+                for spec in specs:
+                    spec_id = spec.get('spec_id')
+                    option_id = spec.get('option_id')
+                    SKUSpecification.objects.create(spec_id=spec_id, option_id=option_id, sku=sku)
+            except:  # 异常回滚
+                transaction.savepoint_rollback(save_point)
+                raise serializers.ValidationError('保存失败')
+            # 成功提交
+            transaction.savepoint_commit(save_point)
+        return sku
 
 
 class SKUCategorySerializer(serializers.ModelSerializer):
