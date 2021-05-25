@@ -2,7 +2,8 @@ from django.urls import path
 from rest_framework_jwt.views import obtain_jwt_token
 from rest_framework.routers import DefaultRouter
 
-from .views import statistical, users, specs, images, skus, orders, permissions
+from .views import statistical, users, specs, images, skus, orders, \
+    permissions, groups
 
 urlpatterns = [
     # ---------------- 后台登录 ----------------
@@ -64,4 +65,9 @@ urlpatterns += router.urls
 # 权限管理
 router = DefaultRouter()
 router.register('permission/perms', permissions.PermissionView, basename='perms')
+urlpatterns += router.urls
+
+# 用户组管理
+router = DefaultRouter()
+router.register('permission/groups', groups.GroupView, basename='groups')
 urlpatterns += router.urls
