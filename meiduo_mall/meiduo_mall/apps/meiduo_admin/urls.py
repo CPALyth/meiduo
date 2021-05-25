@@ -33,6 +33,10 @@ urlpatterns = [
     path('skus/simple/', images.ImagesView.as_view({'get': 'simple'})),
     # SKU管理
     path('goods/<int:pk>/specs/', skus.SKUView.as_view({'get': 'specs'})),
+
+    # ---------------- 系统管理 ----------------
+    # 权限管理
+    path('permission/content_types/', permissions.PermissionView.as_view({'get': 'content_types'})),
 ]
 
 # ---------------- 商品管理 ----------------
@@ -56,6 +60,7 @@ router = DefaultRouter()
 router.register('orders', orders.OrderView, basename='orders')
 urlpatterns += router.urls
 
+# ---------------- 系统管理 ----------------
 # 权限管理
 router = DefaultRouter()
 router.register('permissions/perms', permissions.PermissionView, basename='perms')
