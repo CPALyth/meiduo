@@ -63,5 +63,5 @@ urlpatterns += router.urls
 # ---------------- 系统管理 ----------------
 # 权限管理
 router = DefaultRouter()
-router.register('permissions/perms', permissions.PermissionView, basename='perms')
+router.register('permission/perms', permissions.PermissionView, basename='perms')
 urlpatterns += router.urls
