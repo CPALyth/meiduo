@@ -38,6 +38,9 @@ urlpatterns = [
     # ---------------- 系统管理 ----------------
     # 权限管理
     path('permission/content_types/', permissions.PermissionView.as_view({'get': 'content_types'})),
+    # 用户组管理
+    path('permission/simple/', groups.GroupView.as_view({'get': 'simple'})),
+
 ]
 
 # ---------------- 商品管理 ----------------
