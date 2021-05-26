@@ -3,7 +3,7 @@ from rest_framework_jwt.views import obtain_jwt_token
 from rest_framework.routers import DefaultRouter
 
 from .views import statistical, users, specs, images, skus, orders, \
-    permissions, groups
+    permissions, groups, admins
 
 urlpatterns = [
     # ---------------- 后台登录 ----------------
@@ -40,7 +40,8 @@ urlpatterns = [
     path('permission/content_types/', permissions.PermissionView.as_view({'get': 'content_types'})),
     # 用户组管理
     path('permission/simple/', groups.GroupView.as_view({'get': 'simple'})),
-
+    # 管理员获取
+    path('permission/groups/simple/', admins.AdminView.as_view({'get': 'simple'})),
 ]
 
 # ---------------- 商品管理 ----------------
@@ -73,4 +74,9 @@ urlpatterns += router.urls
 # 用户组管理
 router = DefaultRouter()
 router.register('permission/groups', groups.GroupView, basename='groups')
+urlpatterns += router.urls
+
+# 管理员管理
+router = DefaultRouter()
+router.register('permission/admins', admins.AdminView, basename='admins')
 urlpatterns += router.urls
