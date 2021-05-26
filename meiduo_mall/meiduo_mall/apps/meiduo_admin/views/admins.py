@@ -14,3 +14,8 @@ class AdminView(ModelViewSet):
     serializer_class = AdminSerializer
     pagination_class = MyPagination
     permission_classes = [IsAdminUser]
+
+    def simple(self, request):
+        groups = Group.objects.all()
+        ser = GroupSerializer(groups, many=True)
+        return Response(ser.data)
