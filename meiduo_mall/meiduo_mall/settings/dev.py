@@ -17,7 +17,7 @@ SERVER_IP = '192.168.250.130'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print(BASE_DIR)
+print(BASE_DIR)  # /Users/ws/PycharmProjects/meiduo/meiduo_mall/meiduo_mall
 
 import sys
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
@@ -32,7 +32,11 @@ SECRET_KEY = 'django-insecure-hy04&&ogujj*dkj!a#851-t%54w_-grjuabrg6adi+i-bj=58%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'www.meiduo.site',
+    '127.0.0.1',
+    SERVER_IP,
+]
 
 
 # Application definition
@@ -321,11 +325,12 @@ DATABASES_ROUTERS = ['meiduo_mall.utils.db_router.MasterSlaveDBRouter']
 
 # CORS
 CORS_ORIGIN_WHITELIST = (
-    'http://127.0.0.1:8080',
     'http://127.0.0.1:8000',
-    'http://localhost:8080',
+    'http://127.0.0.1:8080',
     'http://www.meiduo.site:8080',
-    'http://api.meiduo.site:8000'
+    'http://api.meiduo.site:8000',
+    'http://{}:8000'.format(SERVER_IP),
+    'http://{}:8080'.format(SERVER_IP),
 )
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
 

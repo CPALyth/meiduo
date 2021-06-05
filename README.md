@@ -5,6 +5,9 @@
 ![](https://img.shields.io/badge/mysql-8.0.25-green.svg)
 ![](https://img.shields.io/badge/redis-4.0.9-green.svg)
 
+![](https://z3.ax1x.com/2021/06/05/2tN16x.png)
+
+
 ## 1 美多商城前台
 基于Django框架的B2C电商项目-美多商城  
 web应用模式: 前后端不分离
