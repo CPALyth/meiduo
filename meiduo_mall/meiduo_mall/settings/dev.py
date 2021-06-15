@@ -13,7 +13,7 @@ import os
 import datetime
 from pathlib import Path
 
-SERVER_IP = '192.168.250.130'
+SERVER_IP = '192.168.3.67'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
