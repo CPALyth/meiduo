@@ -215,7 +215,28 @@ class VerifyEmailView(View):
 class AddressView(LoginRequiredMixin, View):
     """用户收货地址"""
     def get(self, request):
-        return render(request, 'user_center_site.html')
+        user = request.user
+        addresses = Address.objects.filter(user=user, is_deleted=False)
+        address_list = []
+        for address in addresses:
+            address_list.append({
+                'id': address.id,
+                'title': address.title,
+                'receiver': address.receiver,
+                'province': address.province.name,
+                'city': address.city.name,
+                'district': address.district.name,
+                'place': address.place,
+                'mobile': address.mobile,
+                'tel': address.tel,
+                'email': address.email,
+            })
+        default_address_id = user.default_address_id if user.default_address_id else -1
+        context = {
+            'addresses': address_list,
+            'default_address_id': default_address_id,
+        }
+        return render(request, 'user_center_site.html', context)
 
 
 class AddressCreateView(LoginRequiredJsonMixin, View):
@@ -286,34 +307,6 @@ class AddressCreateView(LoginRequiredJsonMixin, View):
 
         # 响应保存结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '新增地址成功', 'address': address_dict})
-
-
-class AddressView(View):
-    """用户收货地址"""
-    def get(self, request):
-        # 获取当前登录用户的收货地址列表
-        user = request.user
-        addresses = Address.objects.filter(user=user, is_deleted=False)
-        address_list = []
-        for address in addresses:
-            address_list.append({
-                'id': address.id,
-                'title': address.title,
-                'receiver': address.receiver,
-                'province': address.province.name,
-                'city': address.city.name,
-                'district': address.district.name,
-                'place': address.place,
-                'mobile': address.mobile,
-                'tel': address.tel,
-                'email': address.email,
-            })
-        # 构造上下文
-        context = {
-            'default_address_id': user.default_address_id,
-            'addresses': address_list,
-        }
-        return render(request, 'user_center_site.html', context)
 
 
 class UpdateDestroyAddressView(View):
