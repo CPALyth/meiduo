@@ -231,7 +231,7 @@ class AddressView(LoginRequiredMixin, View):
                 'tel': address.tel,
                 'email': address.email,
             })
-        default_address_id = user.default_address_id if user.default_address_id else -1
+        default_address_id = user.default_address_id
         context = {
             'addresses': address_list,
             'default_address_id': default_address_id,
