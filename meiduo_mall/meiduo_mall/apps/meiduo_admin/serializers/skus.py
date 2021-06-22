@@ -32,9 +32,8 @@ class SKUSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         specs = self.context['request'].data.get('specs')
-        with transaction.atomic():
-            save_point = transaction.savepoint()
-            try:
+        try:
+            with transaction.atomic():
                 # 保存SKU表
                 sku = SKU.objects.create(**validated_data)
                 # 保存SKU规格表
@@ -42,30 +41,23 @@ class SKUSerializer(serializers.ModelSerializer):
                     spec_id = spec.get('spec_id')
                     option_id = spec.get('option_id')
                     SKUSpecification.objects.create(spec_id=spec_id, option_id=option_id, sku=sku)
-            except:  # 异常回滚
-                transaction.savepoint_rollback(save_point)
-                raise serializers.ValidationError('保存失败')
-            # 成功提交
-            transaction.savepoint_commit(save_point)
+        except:
+            raise serializers.ValidationError('保存失败')
         # 重新生成详情页静态页面
         get_detail_html.delay(sku.id)
         return sku
 
     def update(self, instance, validated_data):
         specs = self.context['request'].data.get('specs')
-        with transaction.atomic():
-            save_point = transaction.savepoint()
-            try:
+        try:
+            with transaction.atomic():
                 # 修改SKU表
                 SKU.objects.filter(id=instance.id).update(**validated_data)
                 # 修改SKU规格表
                 for spec in specs:
                     SKUSpecification.objects.filter(sku=instance).update(**spec)
-            except:  # 异常回滚
-                transaction.savepoint_rollback(save_point)
-                raise serializers.ValidationError('保存失败')
-            # 成功提交
-            transaction.savepoint_commit(save_point)
+        except:
+            raise serializers.ValidationError('保存失败')
         # 重新生成详情页静态页面
         get_detail_html.delay(instance.id)
         return instance

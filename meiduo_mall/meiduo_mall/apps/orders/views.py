@@ -82,26 +82,27 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
         user = request.user
         order_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '{:09d}'.format(user.id)
 
-        with transaction.atomic():
-            # 在数据库操作前创建保存点
-            save_id = transaction.savepoint()
-            try:
+
+        try:
+            with transaction.atomic():
                 # 保存订单基本信息
                 order = OrderInfo.objects.create(
-                    order_id = order_id,
-                    user = user,
-                    address = address,
-                    total_count = 0,
-                    total_amount = Decimal(0.00),
-                    freight = Decimal(10.00),
-                    pay_method = pay_method,
-                    status = OrderInfo.ORDER_STATUS_ENUM['UNPAID'] if pay_method == OrderInfo.PAY_METHODS_ENUM['ALIPAY'] else OrderInfo.ORDER_STATUS_ENUM['UNSEND']
+                    order_id=order_id,
+                    user=user,
+                    address=address,
+                    total_count=0,
+                    total_amount=Decimal(0.00),
+                    freight=Decimal(10.00),
+                    pay_method=pay_method,
+                    status=OrderInfo.ORDER_STATUS_ENUM['UNPAID'] if pay_method == OrderInfo.PAY_METHODS_ENUM[
+                        'ALIPAY'] else
+                    OrderInfo.ORDER_STATUS_ENUM['UNSEND']
                 )
                 # 保存订单商品信息
                 sel_cart_dict = get_sel_cart_dict(user)
                 sku_ids = sel_cart_dict.keys()
                 for sku_id in sku_ids:
-                    while True:  # 每个商品都有多次下单的机会, 直到库存不足
+                    for _ in range(100):  # 每个商品都有多次下单的机会, 除非库存不足
                         # 读取最新的购物车商品信息
                         sku = SKU.objects.get(id=sku_id)
                         # 获取原始的库存和销量
@@ -111,12 +112,12 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                         commit_count = sel_cart_dict[sku.id]
                         # 若提交数量大于商品库存
                         if commit_count > sku.stock:
-                            transaction.savepoint_rollback(save_id)  # 库存不足, 回滚
                             return http.JsonResponse({'code': RETCODE.STOCKERR, 'errmsg': '库存不足'})
                         # 乐观锁实现并发下单, sku减库存 加销量
                         new_stock = ori_stock - commit_count
                         new_sales = ori_sales - commit_count
-                        ret = SKU.objects.filter(stock=ori_stock, sales=ori_sales).update(stock=new_stock, sales=new_sales)
+                        ret = SKU.objects.filter(stock=ori_stock, sales=ori_sales).update(stock=new_stock,
+                                                                                          sales=new_sales)
                         if ret == 0:  # 失败, 回去重新查看库存是否足够
                             continue
                         # spu加销量
@@ -125,10 +126,10 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                         spu.save()
                         # 创建订单商品信息
                         OrderGoods.objects.create(
-                            order = order,
-                            sku = sku,
-                            count = commit_count,
-                            price = sku.price,
+                            order=order,
+                            sku=sku,
+                            count=commit_count,
+                            price=sku.price,
                         )
                         # 累加订单商品的数量和总价到订单基本信息表
                         order.total_count += commit_count
@@ -138,11 +139,8 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                 # 最后再加运费
                 order.total_amount += order.freight
                 order.save()
-            except:
-                transaction.savepoint_rollback(save_id)
-                return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '下单失败'})
-            # 提交事务
-            transaction.savepoint_commit(save_id)
+        except:
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '下单失败'})
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'order_id': order_id})
 
 
