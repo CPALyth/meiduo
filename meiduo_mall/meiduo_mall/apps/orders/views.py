@@ -20,8 +20,10 @@ from . import constants
 
 logger = logging.getLogger('django')
 
+
 class OrderSettlementView(LoginRequiredMixin, View):
     """结算订单"""
+
     def get(self, request):
         """提供订单结算页面"""
         # 获取登录用户
@@ -60,6 +62,7 @@ class OrderSettlementView(LoginRequiredMixin, View):
 
 class OrderCommitView(LoginRequiredJsonMixin, View):
     """提交订单"""
+
     def post(self, request):
         # 接收参数
         json_dict = json.loads(request.body.decode())
@@ -114,8 +117,8 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                         # 乐观锁实现并发下单, sku减库存 加销量
                         new_stock = ori_stock - commit_count
                         new_sales = ori_sales - commit_count
-                        ret = SKU.objects.filter(stock=ori_stock, sales=ori_sales).update(stock=new_stock,
-                                                                                          sales=new_sales)
+                        ret = SKU.objects.filter(id=sku_id, stock=ori_stock, sales=ori_sales).update(stock=new_stock,
+                                                                                                     sales=new_sales)
                         if ret == 0:  # 失败, 回去重新查看库存是否足够
                             continue
                         # spu加销量
@@ -144,6 +147,7 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
 
 class OrderSuccessView(LoginRequiredMixin, View):
     """提交订单成功页面"""
+
     def get(self, request):
         order_id = request.GET.get('order_id')
         payment_amount = request.GET.get('payment_amount')
@@ -159,6 +163,7 @@ class OrderSuccessView(LoginRequiredMixin, View):
 
 class UserOrderInfoView(LoginRequiredMixin, View):
     """我的订单"""
+
     def get(self, request, page_num):
         """提供我的订单页面"""
         user = request.user
@@ -197,6 +202,7 @@ class UserOrderInfoView(LoginRequiredMixin, View):
 
 class OrderCommentView(LoginRequiredMixin, View):
     """订单商品评价"""
+
     def get(self, request):
         """展示商品评价页面"""
         user = request.user
