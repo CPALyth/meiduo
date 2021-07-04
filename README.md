@@ -1,11 +1,12 @@
 # 美多商城
 ![](https://img.shields.io/badge/Python-3.6-blue.svg)
 ![](https://img.shields.io/badge/Django-3.2-blue.svg)
-![](https://img.shields.io/badge/ubuntu-20.04-green.svg)
-![](https://img.shields.io/badge/mysql-8.0.25-green.svg)
-![](https://img.shields.io/badge/redis-4.0.9-green.svg)
+![](https://img.shields.io/badge/Vue-2.5.6-blue.svg)
+![](https://img.shields.io/badge/ubuntu-20.04-orange.svg)
+![](https://img.shields.io/badge/mysql-8.0.25-red.svg)
+![](https://img.shields.io/badge/redis-4.0.9-red.svg)
 
-基于Django框架的B2C电商项目-美多商城  
+基于Django框架的B2C电商项目-美多商城
 
 ## 1 美多商城前台
 web应用模式: 前后端不分离
