@@ -82,7 +82,6 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
         user = request.user
         order_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '{:09d}'.format(user.id)
 
-
         try:
             with transaction.atomic():
                 # 保存订单基本信息
@@ -95,8 +94,7 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                     freight=Decimal(10.00),
                     pay_method=pay_method,
                     status=OrderInfo.ORDER_STATUS_ENUM['UNPAID'] if pay_method == OrderInfo.PAY_METHODS_ENUM[
-                        'ALIPAY'] else
-                    OrderInfo.ORDER_STATUS_ENUM['UNSEND']
+                        'ALIPAY'] else OrderInfo.ORDER_STATUS_ENUM['UNSEND']
                 )
                 # 保存订单商品信息
                 sel_cart_dict = get_sel_cart_dict(user)
