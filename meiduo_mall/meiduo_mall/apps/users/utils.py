@@ -63,7 +63,7 @@ class UsernameMobileBackend(ModelBackend):
                 user = User.objects.get(username=username, is_staff=True)
             except:
                 try:
-                    user = User.objects.get(mobile=username)
+                    user = User.objects.get(mobile=username, is_staff=True)
                 except:
                     return None
         # 判断密码
