@@ -323,7 +323,7 @@ CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
 # MySQL读写分离路由
 DATABASES_ROUTERS = ['meiduo_mall.utils.db_router.MasterSlaveDBRouter']
 
-# CORS
+# CORS, 指定哪些网站可以向服务端发起跨源访问请求
 CORS_ORIGIN_WHITELIST = (
     'http://127.0.0.1:8000',
     'http://127.0.0.1:8080',
