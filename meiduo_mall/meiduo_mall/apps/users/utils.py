@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
+from django.db.models import Q
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from .models import User
@@ -52,20 +53,14 @@ class UsernameMobileBackend(ModelBackend):
         front = kwargs.get('front', False)
         if front:  # 前台登录
             try:
-                user = User.objects.get(username=username)
+                user = User.objects.get(Q(username=username) | Q(mobile=username))
             except:
-                try:
-                    user = User.objects.get(mobile=username)
-                except:
-                    return None
+                return None
         else:  # 后台登录
             try:
-                user = User.objects.get(username=username, is_staff=True)
+                user = User.objects.get(Q(username=username) | Q(mobile=username), is_staff=True)
             except:
-                try:
-                    user = User.objects.get(mobile=username, is_staff=True)
-                except:
-                    return None
+                return None
         # 判断密码
         if user and user.check_password(password):
             return user
